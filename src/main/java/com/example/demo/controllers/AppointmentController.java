@@ -26,6 +26,10 @@ public class AppointmentController {
     @Autowired
     AppointmentRepository appointmentRepository;
 
+    public AppointmentController(AppointmentRepository appointmentRepository){
+        this.appointmentRepository = appointmentRepository;
+    }
+
     @GetMapping("/appointments")
     public ResponseEntity<List<Appointment>> getAllAppointments(){
         List<Appointment> appointments = new ArrayList<>();
@@ -51,14 +55,25 @@ public class AppointmentController {
     }
 
     @PostMapping("/appointment")
-    public ResponseEntity<List<Appointment>> createAppointment(@RequestBody Appointment appointment){
-        /** TODO 
-         * Implement this function, which acts as the POST /api/appointment endpoint.
-         * Make sure to check out the whole project. Specially the Appointment.java class
-         */
-        return new ResponseEntity<>(HttpStatus.I_AM_A_TEAPOT);
-    }
+    public ResponseEntity<Appointment>createAppointment(@RequestBody Appointment newAppointment){
+        try {
+            List<Appointment> dataBaseAppointments = appointmentRepository.findAll();
 
+            for (Appointment appointment : dataBaseAppointments) {
+                if (appointment.overlaps(newAppointment)) {
+                    return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+                }
+            }
+            boolean isValidTotalDurationAppointment = newAppointment.getStartsAt().isBefore(newAppointment.getFinishesAt());
+            if (isValidTotalDurationAppointment) {
+                Appointment savedAppointment = appointmentRepository.save(newAppointment);
+                return new ResponseEntity<>(savedAppointment, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
     @DeleteMapping("/appointments/{id}")
     public ResponseEntity<HttpStatus> deleteAppointment(@PathVariable("id") long id){
@@ -72,7 +87,7 @@ public class AppointmentController {
         appointmentRepository.deleteById(id);
 
         return new ResponseEntity<>(HttpStatus.OK);
-        
+
     }
 
     @DeleteMapping("/appointments")
