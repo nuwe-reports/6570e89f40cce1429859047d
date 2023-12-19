@@ -1,0 +1,20 @@
+### GET all appointments
+GET {{baseUrl}}/appointments
+Accept: application/json
+
+### GET appointment by id
+GET {{baseUrl}}/appointments/{{id}}
+Accept: application/json
+
+### Create appointment
+POST {{baseUrl}}/appointment
+Content-Type: application/json
+
+### Delete appointment by id
+DELETE {{baseUrl}}/appointments/{{id}}
+Accept: application/json
+
+### Delete all appointments
+DELETE {{baseUrl}}/appointments
+Accept: application/json
+
