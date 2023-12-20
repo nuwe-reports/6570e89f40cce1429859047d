@@ -1,0 +1,19 @@
+### GET all patients
+GET {{baseUrl}}/patients
+Accept: application/json
+
+### GET patient by id
+GET {{baseUrl}}/patients/{{id}}
+Accept: application/json
+
+### Create patient
+POST {{baseUrl}}/patient
+Content-Type: application/json
+
+### Delete patient by id
+DELETE {{baseUrl}}/patients/{{id}}
+Accept: application/json
+
+### Delete all patients
+DELETE {{baseUrl}}/patients
+Accept: application/json

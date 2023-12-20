@@ -1,0 +1,19 @@
+### GET all rooms
+GET {{baseUrl}}/rooms
+Accept: application/json
+
+### GET room by name
+GET {{baseUrl}}/rooms/{{roomName}}
+Accept: application/json
+
+### Create room
+POST {{baseUrl}}/room
+Content-Type: application/json
+
+### Delete room by name
+DELETE {{baseUrl}}/rooms/{{roomName}}
+Accept: application/json
+
+### Delete all rooms
+DELETE {{baseUrl}}/rooms
+Accept: application/json

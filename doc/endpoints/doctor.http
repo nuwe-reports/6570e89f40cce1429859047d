@@ -1,0 +1,20 @@
+
+### GET all doctors
+GET {{baseUrl}}/doctors
+Accept: application/json
+
+### GET doctor by id
+GET {{baseUrl}}/doctors/{{id}}
+Accept: application/json
+
+### Create doctor
+POST {{baseUrl}}/doctor
+Content-Type: application/json
+
+### Delete doctor by id
+DELETE {{baseUrl}}/doctors/{{id}}
+Accept: application/json
+
+### Delete all doctors
+DELETE {{baseUrl}}/doctors
+Accept: application/json
