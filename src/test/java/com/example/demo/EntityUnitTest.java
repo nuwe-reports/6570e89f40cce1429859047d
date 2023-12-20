@@ -24,7 +24,7 @@ class EntityUnitTest {
 	private Doctor doctorToPersist;
 	private Patient patientToPersist;
     private Room roomToPersist;
-    private Appointment appointmentToPersist;
+    private Appointment appointmentToPersist1;
     private Appointment appointmentToPersist2;
     private Appointment appointmentToPersist3;
 
@@ -42,7 +42,7 @@ class EntityUnitTest {
         LocalDateTime startsAt= LocalDateTime.parse("19:30 24/04/2023", formatter);
         LocalDateTime finishesAt = LocalDateTime.parse("20:30 24/04/2023", formatter);
 
-        this.appointmentToPersist = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAt, finishesAt);
+        this.appointmentToPersist1 = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAt, finishesAt);
 
         entityManager.persist(this.patientToPersist);
         entityManager.flush();
@@ -50,30 +50,30 @@ class EntityUnitTest {
         entityManager.flush();
         entityManager.persist(this.roomToPersist);
         entityManager.flush();
-        entityManager.persist(this.appointmentToPersist);
+        entityManager.persist(this.appointmentToPersist1);
         entityManager.flush();
 
-        Appointment persistedAppointment = entityManager.find(Appointment.class, this.appointmentToPersist.getId());
+        Appointment persistedAppointment = entityManager.find(Appointment.class, this.appointmentToPersist1.getId());
 
         assertThat(persistedAppointment).isNotNull();
-        assertThat(persistedAppointment.getPatient()).isEqualTo( this.appointmentToPersist.getPatient());
-        assertThat(persistedAppointment.getDoctor()).isEqualTo( this.appointmentToPersist.getDoctor());
-        assertThat(persistedAppointment.getRoom()).isEqualTo( this.appointmentToPersist.getRoom());
-        assertThat(persistedAppointment.getStartsAt()).isEqualTo( this.appointmentToPersist.getStartsAt());
-        assertThat(persistedAppointment.getFinishesAt()).isEqualTo( this.appointmentToPersist.getFinishesAt());
+        assertThat(persistedAppointment.getPatient()).isEqualTo( this.appointmentToPersist1.getPatient());
+        assertThat(persistedAppointment.getDoctor()).isEqualTo( this.appointmentToPersist1.getDoctor());
+        assertThat(persistedAppointment.getRoom()).isEqualTo( this.appointmentToPersist1.getRoom());
+        assertThat(persistedAppointment.getStartsAt()).isEqualTo( this.appointmentToPersist1.getStartsAt());
+        assertThat(persistedAppointment.getFinishesAt()).isEqualTo( this.appointmentToPersist1.getFinishesAt());
     }
 
     @Test
     void shouldPersistAppointmentNull() {
-        this.appointmentToPersist = new Appointment();
+        this.appointmentToPersist1 = new Appointment();
 
-        entityManager.persist(this.appointmentToPersist);
+        entityManager.persist(this.appointmentToPersist1);
         entityManager.flush();
 
-        Appointment persistedAppointment = entityManager.find(Appointment.class, this.appointmentToPersist.getId());
+        Appointment persistedAppointment = entityManager.find(Appointment.class, this.appointmentToPersist1.getId());
         assertThat(persistedAppointment).isNotNull();
 
-        assertThat(persistedAppointment.getId()).isEqualTo(this.appointmentToPersist.getId());
+        assertThat(persistedAppointment.getId()).isEqualTo(this.appointmentToPersist1.getId());
         assertThat(persistedAppointment.getPatient()).isNull();
         assertThat(persistedAppointment.getDoctor()).isNull();
         assertThat(persistedAppointment.getRoom()).isNull();
@@ -82,21 +82,59 @@ class EntityUnitTest {
     }
 
     @Test
-    @DisplayName("method overlaps should return true when startsAt and finishesAt times are the same in the same room")
-    void OverlapsReturnsTrueWhenStartAndEndTimesAreSame () {
+    @DisplayName("method overlaps should return true when appointment2 start before that appointment1 end in the same room")
+    void overlapsShouldReturnTrueWhenAppointment2StartsBeforeAppointment1End() {
+        Patient patient2 = new Patient("Paulino", "Antunez", 37, "p.antunez@email.com");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        LocalDateTime startsAtAppointment= LocalDateTime.parse("19:30 24/04/2023", formatter);
+        LocalDateTime finishesAtAppointment = LocalDateTime.parse("20:00 24/04/2023", formatter);
+
+        LocalDateTime startsAtAppointment2= LocalDateTime.parse("19:45 24/04/2023", formatter);
+        LocalDateTime finishesAtAppointment2 = LocalDateTime.parse("20:15 24/04/2023", formatter);
+
+        this.appointmentToPersist1  = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
+        this.appointmentToPersist2 = new Appointment(patient2, this.doctorToPersist, this.roomToPersist, startsAtAppointment2, finishesAtAppointment2);
+
+        assertThat(appointmentToPersist1.overlaps(appointmentToPersist2)).isTrue();
+    }
+
+    @Test
+    @DisplayName("method overlaps should return true when appointment2 end before that appointment1 end in the same room")
+    void overlapsShouldReturnTrueWhenAppointment2EndBeforeAppointment1End() {
+        Patient patient2 = new Patient("Paulino", "Antunez", 37, "p.antunez@email.com");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        LocalDateTime startsAtAppointment= LocalDateTime.parse("19:30 24/04/2023", formatter);
+        LocalDateTime finishesAtAppointment = LocalDateTime.parse("20:00 24/04/2023", formatter);
+
+        LocalDateTime startsAtAppointment2= LocalDateTime.parse("20:15 24/04/2023", formatter);
+        LocalDateTime finishesAtAppointment2 = LocalDateTime.parse("19:45 24/04/2023", formatter);
+
+        this.appointmentToPersist1  = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
+        this.appointmentToPersist2 = new Appointment(patient2, this.doctorToPersist, this.roomToPersist, startsAtAppointment2, finishesAtAppointment2);
+
+        assertThat(appointmentToPersist1.overlaps(appointmentToPersist2)).isTrue();
+    }
+
+    @Test
+    @DisplayName("method overlaps should return true when starts appointment and end appointment are same time")
+    void overlapsShouldReturnTrueWhenAppointmentStartAndEndTimesAreSame () {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
         LocalDateTime startsAt= LocalDateTime.parse("20:30 24/04/2023", formatter);
         LocalDateTime finishesAt = LocalDateTime.parse("20:30 24/04/2023", formatter);
 
-        this.appointmentToPersist = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAt, finishesAt);
+        this.appointmentToPersist1 = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAt, finishesAt);
 
-        assertThat(appointmentToPersist.overlaps(this.appointmentToPersist)).isTrue();
+        assertThat(appointmentToPersist1.overlaps(this.appointmentToPersist1)).isTrue();
     }
 
     @Test
-    @DisplayName("method overlaps should return true when two appointment has the same finishesAt time in the same room")
-    void OverlapsReturnsTrueWhenAppointmentWithSameFinishedAt() {
+    @DisplayName("method overlaps should return true when two appointment have the same end time in the same room")
+    void overlapsShouldReturnTrueWhenTwoAppointmentsWithSameFinishedAt() {
 
         Patient patient2 = new Patient("Paulino", "Antunez", 37, "p.antunez@email.com");
 
@@ -105,78 +143,78 @@ class EntityUnitTest {
         LocalDateTime startsAtAppointment= LocalDateTime.parse("19:30 24/04/2023", formatter);
         LocalDateTime finishesAtAppointment = LocalDateTime.parse("20:00 24/04/2023", formatter);
 
-        LocalDateTime startsAtAppointment1= LocalDateTime.parse("19:45 24/04/2023", formatter);
-        LocalDateTime finishesAtAppointment1 = LocalDateTime.parse("20:00 24/04/2023", formatter);
+        LocalDateTime startsAtAppointment2= LocalDateTime.parse("19:45 24/04/2023", formatter);
 
-        this.appointmentToPersist  = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
-        this.appointmentToPersist2 = new Appointment(patient2, doctorToPersist, this.roomToPersist, startsAtAppointment1, finishesAtAppointment1);
 
-        assertThat(appointmentToPersist.overlaps(appointmentToPersist2)).isTrue();
-    }
+        this.appointmentToPersist1  = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
+        this.appointmentToPersist2 = new Appointment(patient2, doctorToPersist, this.roomToPersist, startsAtAppointment2, finishesAtAppointment);
 
-    @Test
-    @DisplayName("method overlaps should return true when there two appointments with same start and end time in the same room")
-    void OverlapsReturnsTrueWhenThereAppointmentWithSameTime () {
-        Patient patient1 = new Patient("Paulino", "Antunez", 37, "p.antunez@email.com");
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
-
-        LocalDateTime startsAtAppointment= LocalDateTime.parse("19:30 24/04/2023", formatter);
-        LocalDateTime finishesAtAppointment = LocalDateTime.parse("20:00 24/04/2023", formatter);
-
-        this.appointmentToPersist  = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
-        this.appointmentToPersist2 = new Appointment(patient1, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
-
-        assertThat(appointmentToPersist.overlaps(appointmentToPersist2)).isTrue();
+        assertThat(appointmentToPersist1.overlaps(appointmentToPersist2)).isTrue();
     }
 
     @Test
     @DisplayName("method overlaps should return true when two appointments have the same start time in the same room")
-    void OverlapsReturnsTrueWhenAppointmentHaveSameStartsAt() {
-        Patient patient1 = new Patient("Paulino", "Antunez", 37, "p.antunez@email.com");
-        Doctor doctor1   = new Doctor ("Miren", "Iniesta", 24, "m.iniesta@hospital.accwe");
+    void overlapsShouldReturnTrueWhenTwoAppointmentsHaveSameStartsAt() {
+        Patient patient2 = new Patient("Paulino", "Antunez", 37, "p.antunez@email.com");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
         LocalDateTime startsAtAppointment= LocalDateTime.parse("19:30 24/04/2023", formatter);
         LocalDateTime finishesAtAppointment = LocalDateTime.parse("19:45 24/04/2023", formatter);
 
-        LocalDateTime startsAtAppointment1= LocalDateTime.parse("19:30 24/04/2023", formatter);
-        LocalDateTime finishesAtAppointment1 = LocalDateTime.parse("20:00 24/04/2023", formatter);
+        LocalDateTime finishesAtAppointment2 = LocalDateTime.parse("20:00 24/04/2023", formatter);
 
-        this.appointmentToPersist = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
-        this.appointmentToPersist2 = new Appointment(patient1, doctor1, this.roomToPersist, startsAtAppointment1, finishesAtAppointment1);
+        this.appointmentToPersist1 = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
+        this.appointmentToPersist2 = new Appointment(patient2, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment2);
 
-        assertThat(appointmentToPersist.overlaps(appointmentToPersist2)).isTrue();
+        assertThat(appointmentToPersist1.overlaps(appointmentToPersist2)).isTrue();
     }
+
+    @Test
+    @DisplayName("method overlaps should return true when there two appointments with same start and end time in the same room")
+    void overlapsShouldReturnTrueWhenThereTwoAppointmentsWithSameTime () {
+        Patient patient1 = new Patient("Paulino", "Antunez", 37, "p.antunez@email.com");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+
+        LocalDateTime startsAtAppointment= LocalDateTime.parse("19:30 24/04/2023", formatter);
+        LocalDateTime finishesAtAppointment = LocalDateTime.parse("20:00 24/04/2023", formatter);
+
+        this.appointmentToPersist1  = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
+        this.appointmentToPersist2 = new Appointment(patient1, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
+
+        assertThat(appointmentToPersist1.overlaps(appointmentToPersist2)).isTrue();
+    }
+
+
     @Test
     @DisplayName("method overlaps should return false when there three appointments no overlaps in the same room")
-    void OverlapsReturnsFalseWhenThereAppointmentWithDistinctTime () {
-        Patient patient1 = new Patient("Paulino", "Antunez", 37, "p.antunez@email.com");
-        Patient patient2 = new Patient("Sandra", "Solis", 37, "p.sandra@email.com");
+    void overlapsShouldReturnFalseWhenThereAppointmentWithDistinctTime () {
+        Patient patient2 = new Patient("Paulino", "Antunez", 37, "p.antunez@email.com");
+        Patient patient3 = new Patient("Sandra", "Solis", 37, "p.sandra@email.com");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
         LocalDateTime startsAtAppointment= LocalDateTime.parse("19:45 24/04/2023", formatter);
         LocalDateTime finishesAtAppointment = LocalDateTime.parse("20:00 24/04/2023", formatter);
 
-        LocalDateTime startsAtAppointment1= LocalDateTime.parse("20:15 24/04/2023", formatter);
-        LocalDateTime finishesAtAppointment1 = LocalDateTime.parse("20:30 24/04/2023", formatter);
+        LocalDateTime startsAtAppointment2= LocalDateTime.parse("20:15 24/04/2023", formatter);
+        LocalDateTime finishesAtAppointment2 = LocalDateTime.parse("20:30 24/04/2023", formatter);
 
-        LocalDateTime startsAtAppointment2= LocalDateTime.parse("20:45 24/04/2023", formatter);
-        LocalDateTime finishesAtAppointment2 = LocalDateTime.parse("21:00 24/04/2023", formatter);
+        LocalDateTime startsAtAppointment3= LocalDateTime.parse("20:45 24/04/2023", formatter);
+        LocalDateTime finishesAtAppointment3 = LocalDateTime.parse("21:00 24/04/2023", formatter);
 
-        this.appointmentToPersist  = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
-        this.appointmentToPersist2 = new Appointment(patient1, this.doctorToPersist, this.roomToPersist, startsAtAppointment1, finishesAtAppointment1);
-        this.appointmentToPersist3 = new Appointment(patient2, this.doctorToPersist, this.roomToPersist, startsAtAppointment2, finishesAtAppointment2);
+        this.appointmentToPersist1  = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAtAppointment, finishesAtAppointment);
+        this.appointmentToPersist2 = new Appointment(patient2, this.doctorToPersist, this.roomToPersist, startsAtAppointment2, finishesAtAppointment2);
+        this.appointmentToPersist3 = new Appointment(patient3, this.doctorToPersist, this.roomToPersist, startsAtAppointment3, finishesAtAppointment3);
 
-        assertThat(appointmentToPersist.overlaps(appointmentToPersist2)).isFalse();
-        assertThat(appointmentToPersist.overlaps(appointmentToPersist3)).isFalse();
+        assertThat(appointmentToPersist1.overlaps(appointmentToPersist2)).isFalse();
+        assertThat(appointmentToPersist1.overlaps(appointmentToPersist3)).isFalse();
 
-        assertThat(appointmentToPersist2.overlaps(appointmentToPersist)).isFalse();
+        assertThat(appointmentToPersist2.overlaps(appointmentToPersist1)).isFalse();
         assertThat(appointmentToPersist2.overlaps(appointmentToPersist3)).isFalse();
 
-        assertThat(appointmentToPersist3.overlaps(appointmentToPersist)).isFalse();
+        assertThat(appointmentToPersist3.overlaps(appointmentToPersist1)).isFalse();
         assertThat(appointmentToPersist3.overlaps(appointmentToPersist2)).isFalse();
     }
 
@@ -187,8 +225,8 @@ class EntityUnitTest {
         LocalDateTime startsAt= LocalDateTime.parse("19:30 24/04/2023", formatter);
         LocalDateTime finishesAt = LocalDateTime.parse("20:30 24/04/2023", formatter);
 
-        this.appointmentToPersist = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAt, finishesAt);
-        this.appointmentToPersist.setDoctor(new Doctor ("Miren", "Iniesta", 24, "m.iniesta@hospital.accwe"));
+        this.appointmentToPersist1 = new Appointment(this.patientToPersist, this.doctorToPersist, this.roomToPersist, startsAt, finishesAt);
+        this.appointmentToPersist1.setDoctor(new Doctor ("Miren", "Iniesta", 24, "m.iniesta@hospital.accwe"));
 
         entityManager.persist(this.patientToPersist);
         entityManager.flush();
@@ -196,17 +234,17 @@ class EntityUnitTest {
         entityManager.flush();
         entityManager.persist(this.roomToPersist);
         entityManager.flush();
-        entityManager.persist(this.appointmentToPersist);
+        entityManager.persist(this.appointmentToPersist1);
         entityManager.flush();
 
-        Appointment persistedAppointment = entityManager.find(Appointment.class, this.appointmentToPersist.getId());
+        Appointment persistedAppointment = entityManager.find(Appointment.class, this.appointmentToPersist1.getId());
         assertThat(persistedAppointment).isNotNull();
 
-        assertThat(persistedAppointment.getPatient()).isEqualTo(this.appointmentToPersist.getPatient());
-        assertThat(persistedAppointment.getDoctor()).isEqualTo(this.appointmentToPersist.getDoctor());
-        assertThat(persistedAppointment.getRoom()).isEqualTo(this.appointmentToPersist.getRoom());
-        assertThat(persistedAppointment.getStartsAt()).isEqualTo(this.appointmentToPersist.getStartsAt());
-        assertThat(persistedAppointment.getFinishesAt()).isEqualTo(this.appointmentToPersist.getFinishesAt());
+        assertThat(persistedAppointment.getPatient()).isEqualTo(this.appointmentToPersist1.getPatient());
+        assertThat(persistedAppointment.getDoctor()).isEqualTo(this.appointmentToPersist1.getDoctor());
+        assertThat(persistedAppointment.getRoom()).isEqualTo(this.appointmentToPersist1.getRoom());
+        assertThat(persistedAppointment.getStartsAt()).isEqualTo(this.appointmentToPersist1.getStartsAt());
+        assertThat(persistedAppointment.getFinishesAt()).isEqualTo(this.appointmentToPersist1.getFinishesAt());
     }
 
     @Test

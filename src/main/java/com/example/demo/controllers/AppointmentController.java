@@ -56,23 +56,19 @@ public class AppointmentController {
 
     @PostMapping("/appointment")
     public ResponseEntity<Appointment>createAppointment(@RequestBody Appointment newAppointment){
-        try {
-            List<Appointment> dataBaseAppointments = appointmentRepository.findAll();
+        List<Appointment> dataBaseAppointments = appointmentRepository.findAll();
 
-            for (Appointment appointment : dataBaseAppointments) {
-                if (appointment.overlaps(newAppointment)) {
-                    return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-                }
+        for (Appointment appointment : dataBaseAppointments) {
+            if (appointment.overlaps(newAppointment)) {
+                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
             }
-            boolean isValidTotalDurationAppointment = newAppointment.getStartsAt().isBefore(newAppointment.getFinishesAt());
-            if (isValidTotalDurationAppointment) {
-                Appointment savedAppointment = appointmentRepository.save(newAppointment);
-                return new ResponseEntity<>(savedAppointment, HttpStatus.OK);
-            }
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        boolean isValidTotalDurationAppointment = newAppointment.getStartsAt().isBefore(newAppointment.getFinishesAt());
+        if (isValidTotalDurationAppointment) {
+            Appointment savedAppointment = appointmentRepository.save(newAppointment);
+            return new ResponseEntity<>(savedAppointment, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping("/appointments/{id}")
