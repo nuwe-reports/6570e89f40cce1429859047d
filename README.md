@@ -1,4 +1,4 @@
-# Challenge Hospital Accenture
+# Hospital Accenture
 
 ## Introduction
 The project is developed in Java, specifically version 8,
